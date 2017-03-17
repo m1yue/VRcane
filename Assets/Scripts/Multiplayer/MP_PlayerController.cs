@@ -45,18 +45,20 @@ public class MP_PlayerController : NetworkBehaviour
         if (isLocalPlayer)
         {
             SetupCamera();
-			//this.tag = "Player";
+            //this.tag = "Player";
 
-			SetupPlayerModel();
+
+            // hook up the GvrController to this player when it is created
+            // Note: this must be called before the wand and player can be instantiated
+            SetupController();
+
+            SetupPlayerModel();
         }
 		else
 		{
 			//this.tag = "nonLocalPlayer";
 		}
 
-        // hook up the GvrController to this player when it is created
-        // Note: this must be called before the wand and player can be instantiated
-        SetupController();
 
         
         //begin player setup

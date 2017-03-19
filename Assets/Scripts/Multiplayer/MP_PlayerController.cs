@@ -94,35 +94,22 @@ public class MP_PlayerController : NetworkBehaviour
 			CmdSwitchSpell (index);
         }
 
-        if (player.getSpellIndex() == 3)
+        if (player.getSpellIndex() == 3
+            && !pauseMenu.activeSelf)
         {
             CmdShield();
         }
-
-        if ((GvrController.ClickButtonDown || Input.GetMouseButtonDown(0))
+        else if ((GvrController.ClickButtonDown || Input.GetMouseButtonDown(0))
             && !pauseMenu.activeSelf)
         {
-            if (player.getSpellIndex() != 3)
-            {
-                if (player.getSpellIndex() == 0)
-                {
-                    SetTeleport();
-                }
-                else
-                {
-                    CmdShoot();
-                }
-            }
-            /*
-            if (player.getSpellIndex() != 0 && player.getSpellIndex() != 3)
-            {
-				CmdShoot();
-            }
-            else
+            if (player.getSpellIndex() == 0)
             {
                 SetTeleport();
             }
-            */
+            else
+            {
+                CmdShoot();
+            }
         }
         else if (GvrController.AppButtonDown)
         {
@@ -239,11 +226,17 @@ public class MP_PlayerController : NetworkBehaviour
     [Command]
     void CmdShield()
     {
-        if (GvrController.ClickButtonDown && player.getMana() > 0.1f)
+        if (!isLocalPlayer)
+        {
+            return;
+        }
+
+        Debug.Log("Creating Shield");
+        if (GvrController.ClickButtonDown && player.getMana() > 10)
         {
             if (gvrController.transform.Find("Controller") != null)
             {
-                GameObject controller = this.gvrController.transform.Find("Controller").gameObject;
+                GameObject controller = gvrController.transform.Find("Controller").gameObject;
                 shield = GameObject.Instantiate(Resources.Load("MP_Shield"), controller.transform.position,
                     controller.transform.rotation) as GameObject;
                 shield.transform.parent = controller.transform;

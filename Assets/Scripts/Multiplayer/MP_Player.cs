@@ -11,7 +11,7 @@ public class MP_Player
     private float maxMana;
 
     public float manaRegenSpeed = 0.005f;
-    public float manaDepletionShield = 0.2f;
+    public float manaDepletionShield = 0.02f;
 
     private float teleportDistance;
 

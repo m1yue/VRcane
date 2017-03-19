@@ -211,7 +211,7 @@ public class MP_PlayerController : NetworkBehaviour
 
         shield.transform.parent = controller.transform;
         shield.transform.localPosition = new Vector3(shield.transform.localPosition.x - 0.15f,
-            shield.transform.localPosition.y + 0.4f, shield.transform.localPosition.z + 0.7f);
+            shield.transform.localPosition.y + 0.4f, shield.transform.localPosition.z + 0.05f);
 
         shield.SetActive(false);
     }
@@ -243,7 +243,6 @@ public class MP_PlayerController : NetworkBehaviour
 
 			mana -= mc;
 			player.setMana(false, mc);
-            Debug.Log("Mana is now at " + player.getMana());
 		}
     }
 
@@ -255,28 +254,37 @@ public class MP_PlayerController : NetworkBehaviour
             return;
         }
 
-        if (GvrController.ClickButtonDown && player.getMana() > .1f)
+        if (GvrController.ClickButtonDown && player.getMana() > .3f)
         {
+            InvokeRepeating("CmdShieldManaDepletion", 0, MANA_REGEN_TIME);
             CmdActivateShield();
         }
         if (GvrController.ClickButton)
         {
             player.setMana(false, player.manaDepletionShield * Time.deltaTime);
-            if (player.getMana() < 0.05f)
+            if (player.getMana() < 0.3f)
             {
+                CancelInvoke("CmdShieldManaDepletion");
                 CmdDisableShield();
             }
         }
         if (GvrController.ClickButtonUp)
         {
+            CancelInvoke("CmdShieldManaDepletion");
             CmdDisableShield();
         }
     }
 
     [Command]
+    void CmdShieldManaDepletion()
+    {
+        mana -= player.manaDepletionShield;
+        player.setMana(false, player.manaDepletionShield);
+    }
+
+    [Command]
     void CmdActivateShield()
     {
-        CancelInvoke("CmdManaRegen");
         isShieldActive = true;
         shield.SetActive(true);
     }
@@ -284,7 +292,6 @@ public class MP_PlayerController : NetworkBehaviour
     [Command]
     void CmdDisableShield()
     {
-        InvokeRepeating("CmdManaRegen", 0, MANA_REGEN_TIME);
         isShieldActive = false;
         shield.SetActive(false);
     }

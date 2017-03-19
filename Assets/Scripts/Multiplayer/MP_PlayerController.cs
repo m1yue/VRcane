@@ -47,14 +47,14 @@ public class MP_PlayerController : NetworkBehaviour
         if (isLocalPlayer)
         {
             SetupCamera();
-            this.tag = "Player";
 
             SetupPlayerModel();
         }
 		else
 		{
-			this.tag = "nonLocalPlayer";
+			//this.tag = "nonLocalPlayer";
 		}
+        this.tag = "Player";
 
 
         // hook up the GvrController to this player when it is created
@@ -101,6 +101,10 @@ public class MP_PlayerController : NetworkBehaviour
             if (player.getSpellIndex() != 0)
             {
 				CmdShoot();
+            }
+            else
+            {
+                SetTeleport();
             }
         }
         else if (GvrController.AppButtonDown)
@@ -306,5 +310,20 @@ public class MP_PlayerController : NetworkBehaviour
         teleporting = needToTeleport;
         newPos = _newPos;
         player.setMana(false, 20);
+    }
+
+    void SetTeleport()
+    {
+        Ray ray = new Ray(controller.transform.position, pointer.transform.rotation * Vector3.forward);
+        RaycastHit raycastHit;
+
+        if (Physics.Raycast(ray, out raycastHit))
+        {
+            GameObject target = raycastHit.transform.gameObject;
+            if (target.tag == "Rock")
+            {
+                teleport(true, new Vector3(target.transform.position.x, transform.position.y, target.transform.position.z));
+            }
+        }
     }
 }

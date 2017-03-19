@@ -54,6 +54,6 @@ public abstract class GvrBasePointer : MonoBehaviour, IGvrPointer {
   public abstract void GetPointerRadius(out float enterRadius, out float exitRadius);
 
   public virtual Transform GetPointerTransform() {
-    return transform;
+      return transform;
   }
 }

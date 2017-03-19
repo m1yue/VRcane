@@ -95,7 +95,13 @@ public class MP_PlayerController : NetworkBehaviour
 			CmdSwitchSpell (index);
         }
 
-        if (player.getSpellIndex() == 3
+        if (GvrController.AppButtonDown)
+        {
+            //player.teleport();
+
+            pauseMenu.SetActive(!pauseMenu.activeSelf);
+        }
+        else if (player.getSpellIndex() == 3
             && !pauseMenu.activeSelf)
         {
             Shield();
@@ -112,12 +118,7 @@ public class MP_PlayerController : NetworkBehaviour
                 CmdShoot();
             }
         }
-        else if (GvrController.AppButtonDown)
-        {
-            //player.teleport();
 
-            pauseMenu.SetActive(!pauseMenu.activeSelf);
-        }
 
         if (teleporting)
         {
@@ -246,20 +247,32 @@ public class MP_PlayerController : NetworkBehaviour
 
         if (GvrController.ClickButtonDown && player.getMana() > 10)
         {
-            shield.SetActive(true);
+            CmdActivateShield();
         }
         if (GvrController.ClickButton)
         {
             player.setMana(false, player.manaDepletionShield * (int)Time.deltaTime);
             if (player.getMana() == 0)
             {
-                shield.SetActive(false);
+                CmdDisableShield();
             }
         }
         if (GvrController.ClickButtonUp)
         {
-            shield.SetActive(false);
+            CmdDisableShield();
         }
+    }
+
+    [Command]
+    void CmdActivateShield()
+    {
+        shield.SetActive(true);
+    }
+
+    [Command]
+    void CmdDisableShield()
+    {
+        shield.SetActive(false);
     }
 
 	/*

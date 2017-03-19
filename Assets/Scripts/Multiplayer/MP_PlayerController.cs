@@ -394,6 +394,7 @@ public class MP_PlayerController : NetworkBehaviour
             Debug.Log("Raycast hit " + target.tag + " object");
             if (target.tag == "Teleport")
             {
+                mana -= 0.2f;
                 teleport(true, new Vector3(target.transform.position.x, transform.position.y, target.transform.position.z));
             }
         }

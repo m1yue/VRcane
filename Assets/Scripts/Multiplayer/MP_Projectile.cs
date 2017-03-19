@@ -3,7 +3,7 @@ using UnityEngine.Networking;
 
 public class MP_Projectile : NetworkBehaviour {
 	
-	public float power = 0.01f;
+	public float power = 0.1f;
 	public float speed = 1.0f;
 	public float radius = 1.0f;
 	public float duration = 5.0f;
@@ -48,7 +48,6 @@ public class MP_Projectile : NetworkBehaviour {
 		duration = duration * durationMult;
 	}
 
-	//void OnCollisionEnter(Collision collision) {
 	void OnTriggerEnter(Collider collision) {
 		/* does the collided object have a Player component */
 		if(collision.gameObject.GetComponentInParent<MP_PlayerController>() != null)

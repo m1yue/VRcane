@@ -52,6 +52,7 @@ public class MP_Projectile : NetworkBehaviour {
 		/* does the collided object have a Player component */
 		if(collision.gameObject.GetComponentInParent<MP_PlayerController>() != null)
 		{
+            Debug.Log("projectile hit");
 			// tell target to take damage
 			MP_PlayerController target = collision.gameObject.GetComponentInParent<MP_PlayerController>();
 			target.health -= power;

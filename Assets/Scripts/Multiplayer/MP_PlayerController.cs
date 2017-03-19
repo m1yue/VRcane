@@ -12,8 +12,8 @@ public class MP_PlayerController : NetworkBehaviour
 
     private Camera playerCam;
     private GameObject pauseMenu;
-    private GameObject controller;
-    private GameObject controllerMain;
+    private GameObject gvrController;
+    private GameObject shield;
 
     /// Teleport Distance
     [Range(0.4f, 10.0f)]
@@ -94,12 +94,27 @@ public class MP_PlayerController : NetworkBehaviour
 			CmdSwitchSpell (index);
         }
 
+        if (player.getSpellIndex() == 3)
+        {
+            CmdShield();
+        }
 
         if ((GvrController.ClickButtonDown || Input.GetMouseButtonDown(0))
             && !pauseMenu.activeSelf)
         {
-
-            if (player.getSpellIndex() != 0)
+            if (player.getSpellIndex() != 3)
+            {
+                if (player.getSpellIndex() == 0)
+                {
+                    SetTeleport();
+                }
+                else
+                {
+                    CmdShoot();
+                }
+            }
+            /*
+            if (player.getSpellIndex() != 0 && player.getSpellIndex() != 3)
             {
 				CmdShoot();
             }
@@ -107,6 +122,7 @@ public class MP_PlayerController : NetworkBehaviour
             {
                 SetTeleport();
             }
+            */
         }
         else if (GvrController.AppButtonDown)
         {
@@ -147,16 +163,16 @@ public class MP_PlayerController : NetworkBehaviour
     // Hook up the GvrController to this player
     void SetupController()
     {
-        controller = transform.Find("GvrControllerPointer").gameObject;
+        gvrController = transform.Find("GvrControllerPointer").gameObject;
 
-        if (controller != null)
+        if (gvrController != null)
         {
             Debug.Log("Found GvrControllerPointer");
 
-            controller.transform.position = transform.position + new Vector3(0, 1, 0);
-            controller.transform.rotation = transform.rotation;
+            gvrController.transform.position = transform.position + new Vector3(0, 1, 0);
+            gvrController.transform.rotation = transform.rotation;
 
-            pointer = controller.transform.Find("Laser").gameObject;
+            pointer = gvrController.transform.Find("Laser").gameObject;
             if (pointer != null)
             {
                 Debug.Log("Found Laser");
@@ -183,14 +199,6 @@ public class MP_PlayerController : NetworkBehaviour
         // Disable Google's controller graphic
         GameObject controllerGraphic = controller.transform.Find("ddcontroller").gameObject;
         controllerGraphic.SetActive(false);
-
-        /*
-        newWand.transform.localRotation = Quaternion.Euler(90f, 0f, 0f);
-
-        newWand.tag = "New";
-
-        Destroy(GameObject.FindGameObjectWithTag("Old"));
-        */
     }
 
 	// Disable the Player Model to prevent issues with the pointer/teleport
@@ -214,16 +222,11 @@ public class MP_PlayerController : NetworkBehaviour
 		int mc = playerWand.getSpellCost();
 		if (player.getMana() >= mc)
 		{
-			//projectileClone = Resources.Load(playerWand.spells[playerWand.primarySpell]) as GameObject;
-
 			string spell = playerWand.spells [playerWand.primarySpell];
 			Debug.Log ("Shooting " + spell);
 			var projectileClone = GameObject.Instantiate(Resources.Load(spell), pointer.transform.position, pointer.transform.rotation) as GameObject;
 
-			//TODO: replace 500 with spells[primarySpell].getSpeed() 
-			//projectileClone.GetComponent<Rigidbody>().AddForce( (GvrArmModel.Instance.pointerRotation)*Vector3.forward * 500 *speedMultiplier);
 			if (projectileClone.GetComponent<Rigidbody>())
-				//projectileClone.GetComponent<Rigidbody>().AddForce(pointer.transform.forward * 500 * speedMultiplier);
 				projectileClone.GetComponent<Rigidbody>().AddForce(pointer.transform.forward * projectileClone.GetComponent<MP_Projectile>().getSpeed() * playerWand.speedMultiplier);
 
 			NetworkServer.Spawn(projectileClone);
@@ -231,17 +234,37 @@ public class MP_PlayerController : NetworkBehaviour
 			mana -= mc;
 			player.setMana(false, mc);
 		}
+    }
 
-        //var projectileClone = GameObject.Instantiate(Resources.Load("Firebolt"), pointer.transform.position, pointer.transform.rotation) as GameObject;
-        //if (projectileClone.GetComponent<Rigidbody>())
-            //projectileClone.GetComponent<Rigidbody>().AddForce(pointer.transform.forward * 500 * speedMultiplier);
-            //projectileClone.GetComponent<Rigidbody>().AddForce(pointer.transform.forward * projectileClone.GetComponent<Projectile>().getSpeed() * playerWand.speedMultiplier);
+    [Command]
+    void CmdShield()
+    {
+        if (GvrController.ClickButtonDown && player.getMana() > 0.1f)
+        {
+            if (gvrController.transform.Find("Controller") != null)
+            {
+                GameObject controller = this.gvrController.transform.Find("Controller").gameObject;
+                shield = GameObject.Instantiate(Resources.Load("MP_Shield"), controller.transform.position,
+                    controller.transform.rotation) as GameObject;
+                shield.transform.parent = controller.transform;
+                shield.transform.localPosition = new Vector3(shield.transform.localPosition.x - 0.15f,
+                    shield.transform.localPosition.y + 0.4f, shield.transform.localPosition.z + 0.7f);
 
-        //projectileClone.GetComponent<Rigidbody>().AddForce(pointer.transform.forward * 500 * playerWand.speedMultiplier);
-
-        // Create the projectile on the server and all the clients connected to the server
-        // Updates are sent to the clients when state changes on the server
-        //NetworkServer.Spawn(projectileClone);
+                NetworkServer.Spawn(shield);
+            }
+        }
+        if (GvrController.ClickButton)
+        {
+            player.setMana(false, player.manaDepletionShield * (int)Time.deltaTime);
+            if (player.getMana() == 0)
+            {
+                NetworkServer.Destroy(shield);
+            }
+        }
+        if (GvrController.ClickButtonUp)
+        {
+            NetworkServer.Destroy(shield);
+        }
     }
 
 	/*
@@ -252,26 +275,6 @@ public class MP_PlayerController : NetworkBehaviour
 	{
 		spellIndex = index;
 		player.switchSpell (index);
-	}
-		
-	[Client]
-	int GetSpellCost()
-	{
-		int manaCost = 0;
-
-		//projectileClone = GameObject.Instantiate(Resources.Load("Spell_Ball"), pointer.transform.position, pointer.transform.rotation) as GameObject;
-		//projectileClone = GameObject.Instantiate(Resources.Load(spells[primarySpell]), pointer.transform.position, pointer.transform.rotation) as GameObject;
-		var projectileClone = Resources.Load(playerWand.spells[playerWand.primarySpell]) as GameObject;
-
-		if (projectileClone != null) {
-			Debug.Log ("Getting mana cost");
-			manaCost = projectileClone.GetComponent<MP_Projectile> ().getMana ();
-			//projectileClone.GetComponent<Projectile>().updateAttributes(0,0,0,0);
-		} else {
-			Debug.Log ("Could not find projectile");
-		}
-
-		return manaCost;
 	}
 
 	void OnHealthChanged(int newHealth)

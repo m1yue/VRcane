@@ -10,6 +10,9 @@ public class MP_Player
     private int maxHP;
     private int maxMana;
 
+    public int manaRegenSpeed = 20;
+    public int manaDepletionShield = 20;
+
     private float teleportDistance;
 
     private MP_Wand wand;

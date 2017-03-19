@@ -35,6 +35,9 @@ public class MP_PlayerController : NetworkBehaviour
 	[SyncVar(hook="OnSpellIndexChanged")]
 	int spellIndex = 0;
 
+    [SyncVar(hook ="OnShieldToggle")]
+    bool isShieldActive = false;
+
 	//private GameObject projectileClone;
 
 
@@ -266,12 +269,14 @@ public class MP_PlayerController : NetworkBehaviour
     [Command]
     void CmdActivateShield()
     {
+        isShieldActive = true;
         shield.SetActive(true);
     }
 
     [Command]
     void CmdDisableShield()
     {
+        isShieldActive = false;
         shield.SetActive(false);
     }
 
@@ -302,6 +307,12 @@ public class MP_PlayerController : NetworkBehaviour
 		spellIndex = newSpellIndex;
 		playerWand.primarySpell = spellIndex;
 	}
+
+    void OnShieldToggle(bool newShieldState)
+    {
+        isShieldActive = newShieldState;
+        shield.SetActive(isShieldActive);
+    }
 
     int whichSwitch(Vector2 prev, Vector2 final)
     {

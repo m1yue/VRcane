@@ -18,15 +18,17 @@ public class MP_PlayerController : NetworkBehaviour
     /// Teleport Distance
     [Range(0.4f, 10.0f)]
     public float teleportDistance = 5.0f;
+    private float movementSpeed = 400f;
 
-	public MP_Player player;
+    public MP_Player player;
     private MP_Wand playerWand;
 
     private Vector2 prevTouchPos;
     private Vector2 touchPos;
-    private bool isTeleport;
+    private bool teleporting;
+    private Vector3 newPos;
 
-	[SyncVar(hook="OnHealthChanged")]
+    [SyncVar(hook="OnHealthChanged")]
 	public int health = 100;
 	[SyncVar(hook="OnManaChanged")]
 	int mana = 100;
@@ -45,22 +47,20 @@ public class MP_PlayerController : NetworkBehaviour
         if (isLocalPlayer)
         {
             SetupCamera();
-            //this.tag = "Player";
-
-
-            // hook up the GvrController to this player when it is created
-            // Note: this must be called before the wand and player can be instantiated
-            SetupController();
+            this.tag = "Player";
 
             SetupPlayerModel();
         }
 		else
 		{
-			//this.tag = "nonLocalPlayer";
+			this.tag = "nonLocalPlayer";
 		}
 
 
-        
+        // hook up the GvrController to this player when it is created
+        // Note: this must be called before the wand and player can be instantiated
+        SetupController();
+
         //begin player setup
         playerWand = new MP_Wand(pointer, reticle, 1, 1, spellArray);
         player = new MP_Player(gameObject, playerWand, teleportDistance);
@@ -102,37 +102,23 @@ public class MP_PlayerController : NetworkBehaviour
             {
 				CmdShoot();
             }
-            else
+        }
+        else if (GvrController.AppButtonDown)
+        {
+            //player.teleport();
+
+            pauseMenu.SetActive(!pauseMenu.activeSelf);
+        }
+
+        if (teleporting)
+        {
+            float step = movementSpeed * Time.deltaTime;
+            this.transform.position = Vector3.MoveTowards(this.transform.position, newPos, step);
+            if (this.transform.position == newPos)
             {
-                player.teleport();
+                teleporting = false;
             }
         }
-        else if (GvrController.AppButtonDown)
-        {
-            //player.teleport();
-
-            pauseMenu.SetActive(!pauseMenu.activeSelf);
-        }
-
-        /* BEN's Old stuff
-        if ((GvrController.TouchDown || Input.GetMouseButtonDown(0))
-            && player.getMana() >= 20
-            && !pauseMenu.activeSelf)
-        {
-            Debug.Log("Received shoot command");
-            Shoot();
-
-            player.setMana(false, 20);
-            print(player.getHealth());
-        }
-
-        else if (GvrController.AppButtonDown)
-        {
-            //player.teleport();
-
-            pauseMenu.SetActive(!pauseMenu.activeSelf);
-        }
-        */
     }
 
     // Hook up the GvrViewer to this player
@@ -313,5 +299,12 @@ public class MP_PlayerController : NetworkBehaviour
         //Debug.Log("Distx: " + distx + " Disty: " + disty);
 
         return index;
+    }
+
+    public void teleport(bool needToTeleport, Vector3 _newPos)
+    {
+        teleporting = needToTeleport;
+        newPos = _newPos;
+        player.setMana(false, 20);
     }
 }

@@ -68,14 +68,32 @@ public class MP_PlayerController : NetworkBehaviour
         playerWand = new MP_Wand(pointer, reticle, 1, 1, spellArray);
         player = new MP_Player(gameObject, playerWand, teleportDistance);
 
-        InvokeRepeating("invokeRegen", 1.0f, 1.0f);
+        //InvokeRepeating("invokeRegen", 1.0f, 1.0f);
     }
 
 
     // Update is called once per frame
     void Update()
     {
-		//Debug.Log ("Current Player Health: " + player.getHealth ());
+        if (teleporting)
+        {
+            float step = movementSpeed * Time.deltaTime;
+            this.transform.position = Vector3.MoveTowards(this.transform.position, newPos, step);
+            if (this.transform.position == newPos)
+            {
+                teleporting = false;
+            }
+        }
+
+        //Constant mana regeneration
+        if (player.getSpellIndex() != 3 || (player.getSpellIndex() == 3 && !GvrController.ClickButton))
+        {
+            mana += player.manaRegenSpeed * Time.deltaTime;
+            player.setMana(true, player.manaRegenSpeed * Time.deltaTime);
+        }
+
+
+        //Debug.Log ("Current Player Health: " + player.getHealth ());
         // prevent non-local players from responding to input from the local system
         if (!isLocalPlayer)
         {
@@ -109,42 +127,6 @@ public class MP_PlayerController : NetworkBehaviour
         else if (GvrController.AppButtonDown)
         {
             pauseMenu.SetActive(!pauseMenu.activeSelf);
-        }
-
-        if (teleporting)
-        {
-            float step = movementSpeed * Time.deltaTime;
-            this.transform.position = Vector3.MoveTowards(this.transform.position, newPos, step);
-            if (this.transform.position == newPos)
-            {
-                teleporting = false;
-            }
-        }
-
-        /* BEN's Old stuff
-        if ((GvrController.TouchDown || Input.GetMouseButtonDown(0))
-            && player.getMana() >= 20
-            && !pauseMenu.activeSelf)
-        {
-            Debug.Log("Received shoot command");
-            Shoot();
-
-            player.setMana(false, 20);
-            print(player.getHealth());
-        }
-
-        else if (GvrController.AppButtonDown)
-        {
-            //player.teleport();
-
-            pauseMenu.SetActive(!pauseMenu.activeSelf);
-        }
-        */
-
-        //Constant mana regeneration
-        if (player.getSpellIndex() != 3 || (player.getSpellIndex() == 3 && !GvrController.ClickButton))
-        {
-            player.setMana(true, player.manaRegenSpeed * Time.deltaTime);
         }
     }
 
@@ -236,22 +218,6 @@ public class MP_PlayerController : NetworkBehaviour
 	{
 		spellIndex = index;
 		player.switchSpell (index);
-	}
-		
-	[Client]
-	int GetSpellCost()
-	{
-		int manaCost = 0;
-		var projectileClone = Resources.Load(playerWand.spells[playerWand.primarySpell]) as GameObject;
-
-		if (projectileClone != null) {
-			Debug.Log ("Getting mana cost");
-			manaCost = projectileClone.GetComponent<MP_Projectile> ().getMana ();
-		} else {
-			Debug.Log ("Could not find projectile");
-		}
-
-		return manaCost;
 	}
 
 	void OnHealthChanged(float newHealth)

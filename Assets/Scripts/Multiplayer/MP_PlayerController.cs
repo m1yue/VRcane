@@ -44,7 +44,7 @@ public class MP_PlayerController : NetworkBehaviour
     // Use this for initialization
     void Start()
     {
-        string[] spellArray = { "Teleport", "MP_Fireball", "MP_Spell_Ball", "MP_Shield" };
+        string[] spellArray = { "Teleport", "MP_Fireball", "Network_Ball", "MP_Shield" };
 
         // Only the local player gets the GVRViewer camera
         if (isLocalPlayer)
@@ -57,7 +57,7 @@ public class MP_PlayerController : NetworkBehaviour
 		{
 			//this.tag = "nonLocalPlayer";
 		}
-        this.tag = "Player";
+        this.tag = "Player";    
 
 
         // hook up the GvrController to this player when it is created

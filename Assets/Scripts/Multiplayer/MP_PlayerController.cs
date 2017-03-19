@@ -38,7 +38,7 @@ public class MP_PlayerController : NetworkBehaviour
     [SyncVar(hook ="OnShieldToggle")]
     bool isShieldActive = false;
 
-	//private GameObject projectileClone;
+    const float MANA_REGEN_TIME = 0.1f;
 
 
     // Use this for initialization
@@ -69,6 +69,8 @@ public class MP_PlayerController : NetworkBehaviour
         //begin player setup
         playerWand = new MP_Wand(pointer, reticle, 1, 1, spellArray);
         player = new MP_Player(gameObject, playerWand, teleportDistance);
+
+        InvokeRepeating("CmdManaRegen", 0, MANA_REGEN_TIME);
     }
 
 
@@ -92,14 +94,11 @@ public class MP_PlayerController : NetworkBehaviour
         {
             touchPos = GvrController.TouchPos;
             int index = whichSwitch(prevTouchPos, touchPos);
-			//player.switchSpell (index);
 			CmdSwitchSpell (index);
         }
 
         if (GvrController.AppButtonDown)
         {
-            //player.teleport();
-
             pauseMenu.SetActive(!pauseMenu.activeSelf);
         }
         else if (player.getSpellIndex() == 3
@@ -130,6 +129,13 @@ public class MP_PlayerController : NetworkBehaviour
                 teleporting = false;
             }
         }
+        /*
+        //Constant mana regeneration
+        if (player.getSpellIndex() != 3 || (player.getSpellIndex() == 3 && !GvrController.ClickButton))
+        {
+            CmdManaRegen();
+        }
+        */
     }
 
     // Hook up the GvrViewer to this player
@@ -210,12 +216,20 @@ public class MP_PlayerController : NetworkBehaviour
         shield.SetActive(false);
     }
 
+    [Command]
+    void CmdManaRegen()
+    {
+        mana += player.manaRegenSpeed;
+        player.setMana(true, player.manaRegenSpeed);
+    }
+
     // Shoot command called by the Client but run on the server
-	// Command methods must be called by a class extending NetworkBehaviour and must be prefixed with "Cmd"
+    // Command methods must be called by a class extending NetworkBehaviour and must be prefixed with "Cmd"
     [Command]
     void CmdShoot()
     {
 		float mc = playerWand.getSpellCost();
+        Debug.Log("Mana Cost: " + mc);
 		if (player.getMana() >= mc)
 		{
 			string spell = playerWand.spells [playerWand.primarySpell];
@@ -229,6 +243,7 @@ public class MP_PlayerController : NetworkBehaviour
 
 			mana -= mc;
 			player.setMana(false, mc);
+            Debug.Log("Mana is now at " + player.getMana());
 		}
     }
 
@@ -246,8 +261,8 @@ public class MP_PlayerController : NetworkBehaviour
         }
         if (GvrController.ClickButton)
         {
-            player.setMana(false, player.manaDepletionShield * (int)Time.deltaTime);
-            if (player.getMana() == 0.0f)
+            player.setMana(false, player.manaDepletionShield * Time.deltaTime);
+            if (player.getMana() < 0.05f)
             {
                 CmdDisableShield();
             }
@@ -261,6 +276,7 @@ public class MP_PlayerController : NetworkBehaviour
     [Command]
     void CmdActivateShield()
     {
+        CancelInvoke("CmdManaRegen");
         isShieldActive = true;
         shield.SetActive(true);
     }
@@ -268,6 +284,7 @@ public class MP_PlayerController : NetworkBehaviour
     [Command]
     void CmdDisableShield()
     {
+        InvokeRepeating("CmdManaRegen", 0, MANA_REGEN_TIME);
         isShieldActive = false;
         shield.SetActive(false);
     }
@@ -291,7 +308,7 @@ public class MP_PlayerController : NetworkBehaviour
 	void OnManaChanged(float newMana)
 	{
 		mana = newMana;
-		player.setMana (mana);
+		player.setMana(mana);
 	}
 
 	void OnSpellIndexChanged(int newSpellIndex)

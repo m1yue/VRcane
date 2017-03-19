@@ -10,8 +10,8 @@ public class MP_Player
     private float maxHP;
     private float maxMana;
 
-    public float manaRegenSpeed = .2f;
-    public float manaDepletionShield = .2f;
+    public float manaRegenSpeed = 0.005f;
+    public float manaDepletionShield = 0.2f;
 
     private float teleportDistance;
 
@@ -96,7 +96,7 @@ public class MP_Player
     // Sets player health to health
     public void setHealth(float health)
     {
-        this.health = health;
+        this.health = Mathf.Clamp(health, 0f, 1.0f);
     }
 
     // adds to player health by float health if isIncrease is true; otherwise decrease player health by float health
@@ -115,7 +115,7 @@ public class MP_Player
     // Sets player mana to mana
     public void setMana(float mana)
     {
-        this.mana = mana;
+        this.mana = Mathf.Clamp(mana, 0f, 1.0f);
     }
 
     // adds to player mana by mana if isIncrease is true; otherwise decrease player mana by mana

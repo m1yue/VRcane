@@ -199,7 +199,7 @@ public class MP_PlayerController : NetworkBehaviour
     void SetupShield()
     {
         shield = transform.Find("GvrControllerPointer/Controller/MP_Shield").gameObject;
-        GameObject controller = transform.Find("GvrControllerPOinter/Controller").gameObject;
+        GameObject controller = transform.Find("GvrControllerPointer/Controller").gameObject;
 
         shield.transform.parent = controller.transform;
         shield.transform.localPosition = new Vector3(shield.transform.localPosition.x - 0.15f,

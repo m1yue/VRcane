@@ -61,6 +61,7 @@ public class MP_PlayerController : NetworkBehaviour
         // Note: this must be called before the wand and player can be instantiated
         SetupController();
         SetupWand();
+        SetupShield();
 
         //begin player setup
         playerWand = new MP_Wand(pointer, reticle, 1, 1, spellArray);
@@ -97,7 +98,7 @@ public class MP_PlayerController : NetworkBehaviour
         if (player.getSpellIndex() == 3
             && !pauseMenu.activeSelf)
         {
-            CmdShield();
+            Shield();
         }
         else if ((GvrController.ClickButtonDown || Input.GetMouseButtonDown(0))
             && !pauseMenu.activeSelf)
@@ -195,6 +196,18 @@ public class MP_PlayerController : NetworkBehaviour
 		//playerModel.SetActive(false);
 	}
 
+    void SetupShield()
+    {
+        shield = transform.Find("GvrControllerPointer/Controller/MP_Shield").gameObject;
+        GameObject controller = transform.Find("GvrControllerPOinter/Controller").gameObject;
+
+        shield.transform.parent = controller.transform;
+        shield.transform.localPosition = new Vector3(shield.transform.localPosition.x - 0.15f,
+            shield.transform.localPosition.y + 0.4f, shield.transform.localPosition.z + 0.7f);
+
+        shield.SetActive(false);
+    }
+
     void invokeRegen()
     {
         player.healthRegen();
@@ -223,40 +236,29 @@ public class MP_PlayerController : NetworkBehaviour
 		}
     }
 
-    [Command]
-    void CmdShield()
+    // Conditions for enabling or disabling the player's shield
+    void Shield()
     {
         if (!isLocalPlayer)
         {
             return;
         }
 
-        Debug.Log("Creating Shield");
         if (GvrController.ClickButtonDown && player.getMana() > 10)
         {
-            if (gvrController.transform.Find("Controller") != null)
-            {
-                GameObject controller = gvrController.transform.Find("Controller").gameObject;
-                shield = GameObject.Instantiate(Resources.Load("MP_Shield"), controller.transform.position,
-                    controller.transform.rotation) as GameObject;
-                shield.transform.parent = controller.transform;
-                shield.transform.localPosition = new Vector3(shield.transform.localPosition.x - 0.15f,
-                    shield.transform.localPosition.y + 0.4f, shield.transform.localPosition.z + 0.7f);
-
-                NetworkServer.Spawn(shield);
-            }
+            shield.SetActive(true);
         }
         if (GvrController.ClickButton)
         {
             player.setMana(false, player.manaDepletionShield * (int)Time.deltaTime);
             if (player.getMana() == 0)
             {
-                NetworkServer.Destroy(shield);
+                shield.SetActive(false);
             }
         }
         if (GvrController.ClickButtonUp)
         {
-            NetworkServer.Destroy(shield);
+            shield.SetActive(false);
         }
     }
 

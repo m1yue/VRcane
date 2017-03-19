@@ -20,7 +20,6 @@ public class UI_Health_and_Mana : MonoBehaviour {
 
         if(GameObject.FindGameObjectWithTag("Player") != null)
         {
-            Debug.Log("Found player");
             GameObject localPlayer = GameObject.FindGameObjectWithTag("Player");
             if(localPlayer.GetComponent<PlayerController>() != null)
             {

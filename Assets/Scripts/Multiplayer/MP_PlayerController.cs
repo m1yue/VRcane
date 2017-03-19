@@ -18,21 +18,18 @@ public class MP_PlayerController : NetworkBehaviour
     /// Teleport Distance
     [Range(0.4f, 10.0f)]
     public float teleportDistance = 5.0f;
-    private float movementSpeed = 400f;
 
-
-    public MP_Player player;
+	public MP_Player player;
     private MP_Wand playerWand;
 
     private Vector2 prevTouchPos;
     private Vector2 touchPos;
-    private bool teleporting;
-    private Vector3 newPos;
+    private bool isTeleport;
 
 	[SyncVar(hook="OnHealthChanged")]
-	public float health = 1f;
+	public int health = 100;
 	[SyncVar(hook="OnManaChanged")]
-	float mana = 1f;
+	int mana = 100;
 	[SyncVar(hook="OnSpellIndexChanged")]
 	int spellIndex = 0;
 
@@ -48,35 +45,34 @@ public class MP_PlayerController : NetworkBehaviour
         if (isLocalPlayer)
         {
             SetupCamera();
-            this.tag = "Player";
-            transform.GetChild(0).gameObject.layer = 8;
-            transform.GetChild(0).GetChild(0).gameObject.layer = 8;
-            transform.GetChild(0).GetChild(1).gameObject.layer = 8;
+            //this.tag = "Player";
+
+
+            // hook up the GvrController to this player when it is created
+            // Note: this must be called before the wand and player can be instantiated
+            SetupController();
 
             SetupPlayerModel();
         }
 		else
 		{
-			this.tag = "nonLocalPlayer";
+			//this.tag = "nonLocalPlayer";
 		}
 
-        // hook up the GvrController to this player when it is created
-        // Note: this must be called before the wand and player can be instantiated
-        SetupController();
 
+        
         //begin player setup
         playerWand = new MP_Wand(pointer, reticle, 1, 1, spellArray);
         player = new MP_Player(gameObject, playerWand, teleportDistance);
 
-        //InvokeRepeating("invokeRegen", 1.0f, 1.0f);
+        InvokeRepeating("invokeRegen", 1.0f, 1.0f);
     }
 
 
     // Update is called once per frame
     void Update()
     {
-
-        //Debug.Log ("Current Player Health: " + player.getHealth ());
+		//Debug.Log ("Current Player Health: " + player.getHealth ());
         // prevent non-local players from responding to input from the local system
         if (!isLocalPlayer)
         {
@@ -92,8 +88,9 @@ public class MP_PlayerController : NetworkBehaviour
         if (GvrController.TouchUp)
         {
             touchPos = GvrController.TouchPos;
-            int index = detectSwipeDirection(prevTouchPos, touchPos);
-			CmdSwitchSpell(index);
+            int index = whichSwitch(prevTouchPos, touchPos);
+			//player.switchSpell (index);
+			CmdSwitchSpell (index);
         }
 
 
@@ -105,27 +102,37 @@ public class MP_PlayerController : NetworkBehaviour
             {
 				CmdShoot();
             }
+            else
+            {
+                player.teleport();
+            }
         }
         else if (GvrController.AppButtonDown)
         {
+            //player.teleport();
+
             pauseMenu.SetActive(!pauseMenu.activeSelf);
         }
 
-        if (teleporting)
+        /* BEN's Old stuff
+        if ((GvrController.TouchDown || Input.GetMouseButtonDown(0))
+            && player.getMana() >= 20
+            && !pauseMenu.activeSelf)
         {
-            float step = movementSpeed * Time.deltaTime;
-            this.transform.position = Vector3.MoveTowards(this.transform.position, newPos, step);
-            if (this.transform.position == newPos)
-            {
-                teleporting = false;
-            }
+            Debug.Log("Received shoot command");
+            Shoot();
+
+            player.setMana(false, 20);
+            print(player.getHealth());
         }
 
-        //Constant mana regeneration
-        if (player.getSpellIndex() != 3 || (player.getSpellIndex() == 3 && !GvrController.ClickButton))
+        else if (GvrController.AppButtonDown)
         {
-            CmdManaRegen();
+            //player.teleport();
+
+            pauseMenu.SetActive(!pauseMenu.activeSelf);
         }
+        */
     }
 
     // Hook up the GvrViewer to this player
@@ -150,7 +157,7 @@ public class MP_PlayerController : NetworkBehaviour
         {
             Debug.Log("Found GvrControllerPointer");
 
-            controller.transform.position = transform.position + new Vector3(0,1f,0); //to match the camera's shift
+            controller.transform.position = transform.position;
             controller.transform.rotation = transform.rotation;
 
             pointer = controller.transform.Find("Laser").gameObject;
@@ -169,6 +176,12 @@ public class MP_PlayerController : NetworkBehaviour
 		GameObject playerModel = transform.Find("PlayerModel").gameObject;
 		//playerModel.SetActive(false);
 	}
+
+    void invokeRegen()
+    {
+        player.healthRegen();
+        player.manaRegen();
+    }
 
     // Shoot command called by the Client but run on the server
 	// Command methods must be called by a class extending NetworkBehaviour and must be prefixed with "Cmd"
@@ -195,13 +208,17 @@ public class MP_PlayerController : NetworkBehaviour
 			mana -= mc;
 			player.setMana(false, mc);
 		}
-    }
 
-    [Command]
-    void CmdManaRegen()
-    {
-        mana += player.manaRegenSpeed * Time.deltaTime;
-        player.setMana(true, player.manaRegenSpeed * Time.deltaTime);
+        //var projectileClone = GameObject.Instantiate(Resources.Load("Firebolt"), pointer.transform.position, pointer.transform.rotation) as GameObject;
+        //if (projectileClone.GetComponent<Rigidbody>())
+            //projectileClone.GetComponent<Rigidbody>().AddForce(pointer.transform.forward * 500 * speedMultiplier);
+            //projectileClone.GetComponent<Rigidbody>().AddForce(pointer.transform.forward * projectileClone.GetComponent<Projectile>().getSpeed() * playerWand.speedMultiplier);
+
+        //projectileClone.GetComponent<Rigidbody>().AddForce(pointer.transform.forward * 500 * playerWand.speedMultiplier);
+
+        // Create the projectile on the server and all the clients connected to the server
+        // Updates are sent to the clients when state changes on the server
+        //NetworkServer.Spawn(projectileClone);
     }
 
 	/*
@@ -211,19 +228,39 @@ public class MP_PlayerController : NetworkBehaviour
 	void CmdSwitchSpell(int index)
 	{
 		spellIndex = index;
-		player.switchSpell(index);
+		player.switchSpell (index);
+	}
+		
+	[Client]
+	int GetSpellCost()
+	{
+		int manaCost = 0;
+
+		//projectileClone = GameObject.Instantiate(Resources.Load("Spell_Ball"), pointer.transform.position, pointer.transform.rotation) as GameObject;
+		//projectileClone = GameObject.Instantiate(Resources.Load(spells[primarySpell]), pointer.transform.position, pointer.transform.rotation) as GameObject;
+		var projectileClone = Resources.Load(playerWand.spells[playerWand.primarySpell]) as GameObject;
+
+		if (projectileClone != null) {
+			Debug.Log ("Getting mana cost");
+			manaCost = projectileClone.GetComponent<MP_Projectile> ().getMana ();
+			//projectileClone.GetComponent<Projectile>().updateAttributes(0,0,0,0);
+		} else {
+			Debug.Log ("Could not find projectile");
+		}
+
+		return manaCost;
 	}
 
-	void OnHealthChanged(float newHealth)
+	void OnHealthChanged(int newHealth)
 	{
 		health = newHealth;
-		player.setHealth(health);
+		player.setHealth (health);
 	}
 
-	void OnManaChanged(float newMana)
+	void OnManaChanged(int newMana)
 	{
 		mana = newMana;
-		player.setMana(mana);
+		player.setMana (mana);
 	}
 
 	void OnSpellIndexChanged(int newSpellIndex)
@@ -232,7 +269,7 @@ public class MP_PlayerController : NetworkBehaviour
 		playerWand.primarySpell = spellIndex;
 	}
 
-    int detectSwipeDirection(Vector2 prev, Vector2 final)
+    int whichSwitch(Vector2 prev, Vector2 final)
     {
         float threshold = 0.3F;
         int index = player.getSpellIndex();
@@ -276,12 +313,5 @@ public class MP_PlayerController : NetworkBehaviour
         //Debug.Log("Distx: " + distx + " Disty: " + disty);
 
         return index;
-    }
-
-    public void teleport(bool needToTeleport, Vector3 _newPos)
-    {
-        teleporting = needToTeleport;
-        newPos = _newPos;
-        player.setMana(false, 0.2f);
     }
 }

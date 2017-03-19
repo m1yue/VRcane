@@ -148,11 +148,8 @@ public class AIBehavior : MonoBehaviour {
                 particles.SetActive(true);
                 Invoke("unparalyze", 10f);
             }
-            else
-            {
-                float HPcost = collision.gameObject.GetComponentInParent<Projectile>().getPower();
-                setHealth(false, HPcost);
-            }
+            float HPcost = collision.gameObject.GetComponentInParent<Projectile>().getPower();
+            setHealth(false, HPcost);
         }
     }
 

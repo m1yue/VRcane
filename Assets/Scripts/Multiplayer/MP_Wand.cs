@@ -55,7 +55,7 @@ public class MP_Wand
             //projectileClone.GetComponent<Rigidbody>().AddForce(pointer.transform.forward * 500 * speedMultiplier);
             projectileClone.GetComponent<Rigidbody>().AddForce(pointer.transform.forward * projectileClone.GetComponent<MP_Projectile>().getSpeed() * speedMultiplier);
 
-        NetworkServer.Spawn(projectileClone);
+        NetworkServer.Spawn(projectileClone);   
 
 
         return projectileClone.GetComponent<MP_Projectile>().getMana();

@@ -4,11 +4,13 @@ using UnityEngine.Networking;
 
 public class MP_Player
 {
-    private int health;
-    private int mana;
+    private float health;
+    private float mana;
 
-    private int maxHP;
-    private int maxMana;
+    private float maxHP;
+    private float maxMana;
+
+    public float manaRegenSpeed = 0.2f;
 
     private float teleportDistance;
 
@@ -18,7 +20,7 @@ public class MP_Player
     private int MANA_COST = 5;
 
 
-    public MP_Player(GameObject player, MP_Wand wand, int maxHP, int maxMana, float teleportDistance)
+    public MP_Player(GameObject player, MP_Wand wand, float maxHP, float maxMana, float teleportDistance)
     {
         this.player = player;
         this.wand = wand;
@@ -33,8 +35,8 @@ public class MP_Player
         this.player = player;
         this.wand = wand;
         this.teleportDistance = teleportDistance;
-        this.setHealth(this.maxHP = 100);
-        this.setMana(this.maxMana = 100);
+        this.setHealth(this.maxHP = 1.0f);
+        this.setMana(this.maxMana = 1.0f);
     }
 
 
@@ -63,56 +65,24 @@ public class MP_Player
         return wand.primarySpell;
     }
 
-    public void teleport()
-    {
-        // teleport set distance in the direction the reticle
-        // this only teleports horizontaly right now
-        if (mana >= MANA_COST)
-        {
-            setMana(false, MANA_COST);
-            Vector3 teleportDir = new Vector3(this.wand.reticle.transform.position.x - this.player.transform.position.x,
-                                          0, this.wand.reticle.transform.position.z - this.player.transform.position.z);
-            this.player.transform.position = this.player.transform.position + (teleportDir.normalized * teleportDistance);
-        }
-    }
-
-    public int getHealth()
+    public float getHealth()
     {
         return health;
     }
 
-    public int getMana()
+    public float getMana()
     {
         return mana;
     }
 
-
-    public void healthRegen()
-    {
-        if (this.health < this.maxHP)
-        {
-            this.health += 5;
-        }
-        return;
-    }
-
-    public void manaRegen()
-    {
-        if (this.mana < this.maxMana)
-        {
-            this.mana += 5;
-        }
-        return;
-    }
-
     // Sets player health to health
-    public void setHealth(int health)
+    public void setHealth(float health)
     {
-        this.health = health;
+        this.health = Mathf.Clamp(health, 0f, 1f);
     }
 
     // adds to player health by int health if isIncrease is true; otherwise decrease player health by int health
-    public void setHealth(bool isIncrease, int health)
+    public void setHealth(bool isIncrease, float health)
     {
         if (isIncrease)
         {
@@ -125,13 +95,13 @@ public class MP_Player
     }
 
     // Sets player mana to mana
-    public void setMana(int mana)
+    public void setMana(float mana)
     {
-        this.mana = mana;
+        this.mana = Mathf.Clamp(mana, 0f, 1f);
     }
 
     // adds to player mana by mana if isIncrease is true; otherwise decrease player mana by mana
-    public void setMana(bool isIncrease, int mana)
+    public void setMana(bool isIncrease, float mana)
     {
         if (isIncrease)
         {

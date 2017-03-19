@@ -3,11 +3,11 @@ using System.Collections;
 
 public class Projectile : MonoBehaviour {
 	
-	public float power = 0.1f;
-	public float speed = 1000.0f;
-	public float radius = 10.0f;
-	public float duration = 5.0f;
-	public float manaCost = 0.27f;
+	private float power = 0.1f;
+	private float speed = 1000.0f;
+	private float radius = 10.0f;
+	private float duration = 5.0f;
+	private float manaCost = 0.27f;
 	
     void Start()
     {
@@ -61,7 +61,6 @@ public class Projectile : MonoBehaviour {
 	void OnTriggerEnter(Collider collision) {
 
         /* does the collided object have a Player component */
-        Debug.Log(collision.gameObject.name);
 		if(collision.gameObject.GetComponent<PlayerController>() != null)
 		{
 			// tell target to take damage

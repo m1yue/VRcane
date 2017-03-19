@@ -2,7 +2,7 @@
 using System.Collections;
 using UnityEngine.UI;
 
-public class UI_Health_and_Mana : MonoBehaviour {
+public class MP_UI_Health_and_Mana : MonoBehaviour {
 
     [SerializeField]
     RectTransform manaBar;
@@ -13,7 +13,7 @@ public class UI_Health_and_Mana : MonoBehaviour {
     [SerializeField]
     Text spellText;
 
-    private PlayerController controller;
+    private MP_PlayerController controller;
 
     private void Start()
     {
@@ -22,9 +22,9 @@ public class UI_Health_and_Mana : MonoBehaviour {
         {
             Debug.Log("Found player");
             GameObject localPlayer = GameObject.FindGameObjectWithTag("Player");
-            if(localPlayer.GetComponent<PlayerController>() != null)
+            if(localPlayer.GetComponent<MP_PlayerController>() != null)
             {
-                controller = localPlayer.GetComponent<PlayerController>();
+                controller = localPlayer.GetComponent<MP_PlayerController>();
             }
         }
 

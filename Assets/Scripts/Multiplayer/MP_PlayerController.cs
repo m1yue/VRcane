@@ -75,23 +75,6 @@ public class MP_PlayerController : NetworkBehaviour
     // Update is called once per frame
     void Update()
     {
-        if (teleporting)
-        {
-            float step = movementSpeed * Time.deltaTime;
-            this.transform.position = Vector3.MoveTowards(this.transform.position, newPos, step);
-            if (this.transform.position == newPos)
-            {
-                teleporting = false;
-            }
-        }
-
-        //Constant mana regeneration
-        if (player.getSpellIndex() != 3 || (player.getSpellIndex() == 3 && !GvrController.ClickButton))
-        {
-            mana += player.manaRegenSpeed * Time.deltaTime;
-            player.setMana(true, player.manaRegenSpeed * Time.deltaTime);
-        }
-
 
         //Debug.Log ("Current Player Health: " + player.getHealth ());
         // prevent non-local players from responding to input from the local system
@@ -110,8 +93,7 @@ public class MP_PlayerController : NetworkBehaviour
         {
             touchPos = GvrController.TouchPos;
             int index = detectSwipeDirection(prevTouchPos, touchPos);
-			//player.switchSpell (index);
-			CmdSwitchSpell (index);
+			CmdSwitchSpell(index);
         }
 
 
@@ -127,6 +109,22 @@ public class MP_PlayerController : NetworkBehaviour
         else if (GvrController.AppButtonDown)
         {
             pauseMenu.SetActive(!pauseMenu.activeSelf);
+        }
+
+        if (teleporting)
+        {
+            float step = movementSpeed * Time.deltaTime;
+            this.transform.position = Vector3.MoveTowards(this.transform.position, newPos, step);
+            if (this.transform.position == newPos)
+            {
+                teleporting = false;
+            }
+        }
+
+        //Constant mana regeneration
+        if (player.getSpellIndex() != 3 || (player.getSpellIndex() == 3 && !GvrController.ClickButton))
+        {
+            CmdManaRegen();
         }
     }
 
@@ -197,17 +195,13 @@ public class MP_PlayerController : NetworkBehaviour
 			mana -= mc;
 			player.setMana(false, mc);
 		}
+    }
 
-        //var projectileClone = GameObject.Instantiate(Resources.Load("Firebolt"), pointer.transform.position, pointer.transform.rotation) as GameObject;
-        //if (projectileClone.GetComponent<Rigidbody>())
-            //projectileClone.GetComponent<Rigidbody>().AddForce(pointer.transform.forward * 500 * speedMultiplier);
-            //projectileClone.GetComponent<Rigidbody>().AddForce(pointer.transform.forward * projectileClone.GetComponent<Projectile>().getSpeed() * playerWand.speedMultiplier);
-
-        //projectileClone.GetComponent<Rigidbody>().AddForce(pointer.transform.forward * 500 * playerWand.speedMultiplier);
-
-        // Create the projectile on the server and all the clients connected to the server
-        // Updates are sent to the clients when state changes on the server
-        //NetworkServer.Spawn(projectileClone);
+    [Command]
+    void CmdManaRegen()
+    {
+        mana += player.manaRegenSpeed * Time.deltaTime;
+        player.setMana(true, player.manaRegenSpeed * Time.deltaTime);
     }
 
 	/*
@@ -217,19 +211,19 @@ public class MP_PlayerController : NetworkBehaviour
 	void CmdSwitchSpell(int index)
 	{
 		spellIndex = index;
-		player.switchSpell (index);
+		player.switchSpell(index);
 	}
 
 	void OnHealthChanged(float newHealth)
 	{
 		health = newHealth;
-		player.setHealth (health);
+		player.setHealth(health);
 	}
 
 	void OnManaChanged(float newMana)
 	{
 		mana = newMana;
-		player.setMana (mana);
+		player.setMana(mana);
 	}
 
 	void OnSpellIndexChanged(int newSpellIndex)

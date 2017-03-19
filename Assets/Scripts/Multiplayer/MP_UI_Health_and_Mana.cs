@@ -17,17 +17,10 @@ public class MP_UI_Health_and_Mana : MonoBehaviour {
 
     private void Start()
     {
-
-        if(GameObject.FindGameObjectWithTag("Player") != null)
+        if (GetComponentInParent<MP_PlayerController>() != null)
         {
-            Debug.Log("Found player");
-            GameObject localPlayer = GameObject.FindGameObjectWithTag("Player");
-            if(localPlayer.GetComponent<MP_PlayerController>() != null)
-            {
-                controller = localPlayer.GetComponent<MP_PlayerController>();
-            }
+            controller = GetComponentInParent<MP_PlayerController>();
         }
-
     }
 
     void Update()

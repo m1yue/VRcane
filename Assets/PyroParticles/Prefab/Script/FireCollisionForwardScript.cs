@@ -17,6 +17,7 @@ namespace DigitalRuby.PyroParticles
     public class FireCollisionForwardScript : MonoBehaviour
     {
 
+
         public ICollisionHandler CollisionHandler;
 
         public void OnCollisionEnter(Collision col)

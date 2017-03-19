@@ -14,7 +14,6 @@ namespace DigitalRuby.PyroParticles
     public class MP_FireCollisionForwardScript : NetworkBehaviour
     {
         public float power = 0.1f;
-
         void OnTriggerEnter(Collider collision)
         {
             /* does the collided object have a Player component */

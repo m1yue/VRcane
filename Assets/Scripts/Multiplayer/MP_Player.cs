@@ -4,24 +4,24 @@ using UnityEngine.Networking;
 
 public class MP_Player
 {
-    private int health;
-    private int mana;
+    private float health;
+    private float mana;
 
-    private int maxHP;
-    private int maxMana;
+    private float maxHP;
+    private float maxMana;
 
-    public int manaRegenSpeed = 20;
-    public int manaDepletionShield = 20;
+    public float manaRegenSpeed = .2f;
+    public float manaDepletionShield = .2f;
 
     private float teleportDistance;
 
     private MP_Wand wand;
 
     private GameObject player;
-    private int MANA_COST = 5;
+    private float MANA_COST = .05f;
 
 
-    public MP_Player(GameObject player, MP_Wand wand, int maxHP, int maxMana, float teleportDistance)
+    public MP_Player(GameObject player, MP_Wand wand, float maxHP, float maxMana, float teleportDistance)
     {
         this.player = player;
         this.wand = wand;
@@ -36,24 +36,9 @@ public class MP_Player
         this.player = player;
         this.wand = wand;
         this.teleportDistance = teleportDistance;
-        this.setHealth(this.maxHP = 100);
-        this.setMana(this.maxMana = 100);
+        this.setHealth(this.maxHP = 1.0f);
+        this.setMana(this.maxMana = 1.0f);
     }
-
-
-	/*
-	 * Moved to PlayerController for network purposes
-    public void shoot()
-    {
-        int mc = wand.getSpellCost();
-        if (mana >= mc)
-        {
-            wand.shoot();
-
-            setMana(false, mc);
-        }
-    }
-    */
 
     public void switchSpell(int x)
     {
@@ -79,12 +64,12 @@ public class MP_Player
         }
     }
 
-    public int getHealth()
+    public float getHealth()
     {
         return health;
     }
 
-    public int getMana()
+    public float getMana()
     {
         return mana;
     }
@@ -109,13 +94,13 @@ public class MP_Player
     }
 
     // Sets player health to health
-    public void setHealth(int health)
+    public void setHealth(float health)
     {
         this.health = health;
     }
 
-    // adds to player health by int health if isIncrease is true; otherwise decrease player health by int health
-    public void setHealth(bool isIncrease, int health)
+    // adds to player health by float health if isIncrease is true; otherwise decrease player health by float health
+    public void setHealth(bool isIncrease, float health)
     {
         if (isIncrease)
         {
@@ -128,13 +113,13 @@ public class MP_Player
     }
 
     // Sets player mana to mana
-    public void setMana(int mana)
+    public void setMana(float mana)
     {
         this.mana = mana;
     }
 
     // adds to player mana by mana if isIncrease is true; otherwise decrease player mana by mana
-    public void setMana(bool isIncrease, int mana)
+    public void setMana(bool isIncrease, float mana)
     {
         if (isIncrease)
         {

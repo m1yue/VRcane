@@ -33,46 +33,14 @@ public class MP_Wand
         primarySpell = 0;
     }
 
-    //instantiates projectile of a primarySpell in controller position and orientation
-    [Command]
-    public int shoot()
-    {
-        //NOTE!!!! THESE COMMENTS ARE FOR POTENTIAL ALTERNATIVE IMPLEMENTATION
-        //Getting forward direction for projectile based on GvrController 
-        //Quaternion ori = GvrController.Orientation;
-        //Vector3 projectileDirection = ori * Vector3.forward;
-
-        //CHECK: GvrArmModel is correct for initial position of projectile
-        //projectileClone = GameObject.Instantiate(spells[primarySpell], pointer.transform.position, GvrArmModel.Instance.pointerRotation) as GameObject;
-
-        projectileClone = Resources.Load(spells[primarySpell]) as GameObject;
-
-        projectileClone = GameObject.Instantiate(projectileClone, pointer.transform.position, pointer.transform.rotation) as GameObject;
-
-        //TODO: replace 500 with spells[primarySpell].getSpeed() 
-        //projectileClone.GetComponent<Rigidbody>().AddForce( (GvrArmModel.Instance.pointerRotation)*Vector3.forward * 500 *speedMultiplier);
-        if (projectileClone.GetComponent<Rigidbody>())
-            //projectileClone.GetComponent<Rigidbody>().AddForce(pointer.transform.forward * 500 * speedMultiplier);
-            projectileClone.GetComponent<Rigidbody>().AddForce(pointer.transform.forward * projectileClone.GetComponent<MP_Projectile>().getSpeed() * speedMultiplier);
-
-        NetworkServer.Spawn(projectileClone);
-
-
-        return projectileClone.GetComponent<MP_Projectile>().getMana();
-
-
-    }
-
-
-	public int getSpellCost()
+	public float getSpellCost()
 	{
 
 		//projectileClone = GameObject.Instantiate(Resources.Load("Spell_Ball"), pointer.transform.position, pointer.transform.rotation) as GameObject;
 		//projectileClone = GameObject.Instantiate(Resources.Load(spells[primarySpell]), pointer.transform.position, pointer.transform.rotation) as GameObject;
 		projectileClone = Resources.Load(spells[primarySpell]) as GameObject;
 
-		int manaCost = projectileClone.GetComponent<MP_Projectile>().getMana();
-		//projectileClone.GetComponent<Projectile>().updateAttributes(0,0,0,0);
+		float manaCost = projectileClone.GetComponent<MP_Projectile>().getMana();
 
 		return manaCost;
 	}

@@ -3,11 +3,11 @@ using UnityEngine.Networking;
 
 public class MP_Projectile : NetworkBehaviour {
 	
-	public float power = 1.0f;
+	public float power = 0.01f;
 	public float speed = 1.0f;
 	public float radius = 1.0f;
 	public float duration = 5.0f;
-	public int manaCost = 1;
+	public float manaCost = 0.1f;
 	public string trajectory = "Line";	// not implemented until a lot later
 	
 	// Use this for initialization
@@ -51,16 +51,12 @@ public class MP_Projectile : NetworkBehaviour {
 	//void OnCollisionEnter(Collision collision) {
 	void OnTriggerEnter(Collider collision) {
 		/* does the collided object have a Player component */
-		//print ("Got hit");
 		if(collision.gameObject.GetComponentInParent<MP_PlayerController>() != null)
 		{
 			// tell target to take damage
 			MP_PlayerController target = collision.gameObject.GetComponentInParent<MP_PlayerController>();
-			//target.player.setHealth(false, (int)power);
-			target.health -= (int)power;
+			target.health -= power;
 			CmdPlayerSetHealth (target.player);
-			Debug.Log("Got hit");
-			//Debug.Log ("Current Player hp: " + target.player.getHealth());
 			// kill projectile
 			Destroy(gameObject);
 		}
@@ -78,7 +74,7 @@ public class MP_Projectile : NetworkBehaviour {
 	[Command]
 	void CmdPlayerSetHealth(MP_Player player)
 	{
-		player.setHealth(false, (int)power);
+		player.setHealth(false, power);
 	}
 	
 	public float getPower()
@@ -86,7 +82,7 @@ public class MP_Projectile : NetworkBehaviour {
 		return power;
 	}
 	
-	public int getMana()
+	public float getMana()
 	{
 		return manaCost;
 	}

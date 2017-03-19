@@ -29,9 +29,9 @@ public class MP_PlayerController : NetworkBehaviour
     private Vector3 newPos;
 
     [SyncVar(hook="OnHealthChanged")]
-	public int health = 100;
+	public float health = 1.0f;
 	[SyncVar(hook="OnManaChanged")]
-	int mana = 100;
+	float mana = 1.0f;
 	[SyncVar(hook="OnSpellIndexChanged")]
 	int spellIndex = 0;
 
@@ -69,8 +69,6 @@ public class MP_PlayerController : NetworkBehaviour
         //begin player setup
         playerWand = new MP_Wand(pointer, reticle, 1, 1, spellArray);
         player = new MP_Player(gameObject, playerWand, teleportDistance);
-
-        InvokeRepeating("invokeRegen", 1.0f, 1.0f);
     }
 
 
@@ -212,18 +210,12 @@ public class MP_PlayerController : NetworkBehaviour
         shield.SetActive(false);
     }
 
-    void invokeRegen()
-    {
-        player.healthRegen();
-        player.manaRegen();
-    }
-
     // Shoot command called by the Client but run on the server
 	// Command methods must be called by a class extending NetworkBehaviour and must be prefixed with "Cmd"
     [Command]
     void CmdShoot()
     {
-		int mc = playerWand.getSpellCost();
+		float mc = playerWand.getSpellCost();
 		if (player.getMana() >= mc)
 		{
 			string spell = playerWand.spells [playerWand.primarySpell];
@@ -248,14 +240,14 @@ public class MP_PlayerController : NetworkBehaviour
             return;
         }
 
-        if (GvrController.ClickButtonDown && player.getMana() > 10)
+        if (GvrController.ClickButtonDown && player.getMana() > .1f)
         {
             CmdActivateShield();
         }
         if (GvrController.ClickButton)
         {
             player.setMana(false, player.manaDepletionShield * (int)Time.deltaTime);
-            if (player.getMana() == 0)
+            if (player.getMana() == 0.0f)
             {
                 CmdDisableShield();
             }
@@ -290,13 +282,13 @@ public class MP_PlayerController : NetworkBehaviour
 		player.switchSpell (index);
 	}
 
-	void OnHealthChanged(int newHealth)
+	void OnHealthChanged(float newHealth)
 	{
 		health = newHealth;
 		player.setHealth (health);
 	}
 
-	void OnManaChanged(int newMana)
+	void OnManaChanged(float newMana)
 	{
 		mana = newMana;
 		player.setMana (mana);
@@ -364,7 +356,7 @@ public class MP_PlayerController : NetworkBehaviour
     {
         teleporting = needToTeleport;
         newPos = _newPos;
-        player.setMana(false, 20);
+        player.setMana(false, .2f);
     }
 
     void SetTeleport()

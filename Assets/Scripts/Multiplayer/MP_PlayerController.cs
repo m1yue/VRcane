@@ -234,7 +234,7 @@ public class MP_PlayerController : NetworkBehaviour
 		{
 			string spell = playerWand.spells [playerWand.primarySpell];
 			Debug.Log ("Shooting " + spell);
-			var projectileClone = GameObject.Instantiate(Resources.Load(spell), pointer.transform.position, pointer.transform.rotation) as GameObject;
+			var projectileClone = GameObject.Instantiate(Resources.Load(spell), pointer.transform.position + pointer.transform.forward * 0.3f, pointer.transform.rotation) as GameObject;
 
 			if (projectileClone.GetComponent<Rigidbody>())
 				projectileClone.GetComponent<Rigidbody>().AddForce(pointer.transform.forward * projectileClone.GetComponent<MP_Projectile>().getSpeed() * playerWand.speedMultiplier);

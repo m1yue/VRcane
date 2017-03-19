@@ -314,13 +314,14 @@ public class MP_PlayerController : NetworkBehaviour
 
     void SetTeleport()
     {
-        Ray ray = new Ray(controller.transform.position, pointer.transform.rotation * Vector3.forward);
+        Ray ray = new Ray(pointer.transform.position, pointer.transform.rotation * Vector3.forward);
         RaycastHit raycastHit;
 
         if (Physics.Raycast(ray, out raycastHit))
         {
-            GameObject target = raycastHit.transform.gameObject;
-            if (target.tag == "Rock")
+            GameObject target = raycastHit.collider.gameObject;
+            Debug.Log("Raycast hit " + target.tag + " object");
+            if (target.tag == "Teleport")
             {
                 teleport(true, new Vector3(target.transform.position.x, transform.position.y, target.transform.position.z));
             }

@@ -60,6 +60,7 @@ public class MP_PlayerController : NetworkBehaviour
         // hook up the GvrController to this player when it is created
         // Note: this must be called before the wand and player can be instantiated
         SetupController();
+        SetupWand();
 
         //begin player setup
         playerWand = new MP_Wand(pointer, reticle, 1, 1, spellArray);
@@ -147,7 +148,7 @@ public class MP_PlayerController : NetworkBehaviour
         {
             Debug.Log("Found GvrControllerPointer");
 
-            controller.transform.position = transform.position;
+            controller.transform.position = transform.position + new Vector3(0, 1, 0);
             controller.transform.rotation = transform.rotation;
 
             pointer = controller.transform.Find("Laser").gameObject;
@@ -158,6 +159,33 @@ public class MP_PlayerController : NetworkBehaviour
                 if (pointer != null) Debug.Log("Found Reticle\nFound all Controller objects");
             }
         }
+    }
+
+    void SetupWand()
+    {
+        GameObject controller = transform.Find("GvrControllerPointer/Controller").gameObject;
+        Quaternion wandInitRot = controller.transform.rotation;
+
+        GameObject newWand = GameObject.Instantiate(Resources.Load(PersistentData.data.myWand), controller.transform.position, wandInitRot) as GameObject;
+
+        newWand.tag = "Old";
+
+        newWand.transform.SetParent(controller.transform, false);
+
+        newWand.transform.localPosition = new Vector3(0, 0, 0);
+        newWand.transform.localRotation = Quaternion.Euler(90f, 0f, 0f);
+
+        // Disable Google's controller graphic
+        GameObject controllerGraphic = controller.transform.Find("ddcontroller").gameObject;
+        controllerGraphic.SetActive(false);
+
+        /*
+        newWand.transform.localRotation = Quaternion.Euler(90f, 0f, 0f);
+
+        newWand.tag = "New";
+
+        Destroy(GameObject.FindGameObjectWithTag("Old"));
+        */
     }
 
 	// Disable the Player Model to prevent issues with the pointer/teleport

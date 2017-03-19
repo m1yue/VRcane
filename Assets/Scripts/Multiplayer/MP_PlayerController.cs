@@ -135,6 +135,11 @@ public class MP_PlayerController : NetworkBehaviour
         playerCam.transform.rotation = transform.rotation;
         playerCam.transform.SetParent(transform);
 
+        // make the player unable to see their own model
+        transform.GetChild(0).gameObject.layer = 8;
+        transform.GetChild(0).GetChild(0).gameObject.layer = 8;
+        transform.GetChild(0).GetChild(1).gameObject.layer = 8;
+
         pauseMenu = playerCam.transform.Find("PauseMenuCanvas/PauseMenu").gameObject;
         pauseMenu.SetActive(false);
     }

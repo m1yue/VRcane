@@ -5,6 +5,7 @@ public class PlayerController : MonoBehaviour {
 
 	public Player player;
     public GameObject wand;
+    public SoundManager sMan;
     public bool needWand;
 
 	public GameObject pointer; //pointer of player, origin of projectile
@@ -59,6 +60,7 @@ public class PlayerController : MonoBehaviour {
 
         if(player.getHealth() == 0f)
         {
+            sMan.setLoser();
             Debug.Log("Player died");
             player.die();
         }
@@ -66,6 +68,7 @@ public class PlayerController : MonoBehaviour {
         //If the player is teleporting...
         if(teleporting)
         {
+            sMan.setTeleport();
             float step = movementSpeed * Time.deltaTime;
             this.transform.position = Vector3.MoveTowards(this.transform.position, newPos, step);
             if(this.transform.position == newPos)
@@ -90,6 +93,10 @@ public class PlayerController : MonoBehaviour {
         //If offensive spell is active, shoot.
         if ((player.getSpellIndex() == 1 || player.getSpellIndex() == 2) && GvrController.ClickButtonUp)
         {
+            if (player.getSpellIndex() == 2)
+            {
+                sMan.setParalyze();
+            }
             player.shoot();
         }
 
@@ -192,6 +199,7 @@ public class PlayerController : MonoBehaviour {
                 float HPcost =
                 collision.gameObject.transform.parent.parent.parent.parent.parent.GetComponent<AIBehavior>().getMeleeAttackStrength();
                 player.setHealth(false, HPcost);
+                sMan.gotPunched();
             }
         }
     }
